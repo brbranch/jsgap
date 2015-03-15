@@ -1,0 +1,67 @@
+<html>
+<head>
+<title>sample</title>
+<script type="text/javascript" src="lib/NaturalSelector.js"></script>
+<script type="text/javascript" src="lib/FitnessFunction.js"></script>
+<script type="text/javascript" src="lib/Chromosome.js"></script>
+<script type="text/javascript" src="lib/Genotype.js"></script>
+<script type="text/javascript" src="lib/WeightedRouletteSelector.js"></script>
+<script type="text/javascript" src="lib/SortSelector.js"></script>
+</head>
+<body>
+  染色体の数：<input type="text" id="chormosomesize" value="10" /><br/>
+  遺伝子の数：<input type="text" id="populationsize" value="10" /><br/>
+  進化回数：<input type="text" id="numevolutions" value="50" /><br/>
+  評価セレクタ：<select id="select">
+    <option value="1">WeightedRouletteSelector</option>
+    <option value="2">SortSelector</option>
+  </select>
+  <button onClick="submits()">結果</button>
+  <pre id="print"></pre>
+</body>
+<script type="text/javascript">
+var chromosomeSize = 10;
+var populationSize = 10;
+var numEvolutions = 10;
+function submits() {
+
+  chromosomeSize = parseInt(document.getElementById("chormosomesize").value);
+  populationSize = parseInt(document.getElementById("populationsize").value);
+  numEvolutions = parseInt(document.getElementById("numevolutions").value);
+  var selector = document.getElementById("select").value;
+  var _selector = selector == "1" ? new JsGap.WeightedRouletteSelector() : new JsGap.SortSelector();
+  var evaluate = new JsGap.FitnessFunction(
+      function(subject){
+        var total = 0;
+        for( var i = 0; i < subject.size(); i++ ){
+          if( subject.getAllele( subject.size() - i)) {
+            total += Math.pow(2.0 , i);
+          }
+        }
+        return total;
+      });
+  var doc = document.getElementById("print");
+  doc.innerHTML = "";
+  var genotype = JsGap.Genotype.randomInitialGenotype(
+      populationSize,
+      chromosomeSize,
+      1000,
+      evaluate,
+      _selector
+      );
+
+  //doc.innerHTML += genotype.toString() + "\n";
+  for( var i=0; i < numEvolutions; i++ ){
+    //doc.innerHTML += "evolution" + (i +1) + "\n";
+    genotype.evolve();
+    //doc.innerHTML += genotype.toString() + "\n";
+  }
+
+  doc.innerHTML += genotype.toString();
+
+  var fittest = genotype.getFittestChromosome();
+
+  doc.innerHTML += "<br/>" + "Fittest Chromosome is " + fittest.toString() + " with a fitness value of " + evaluate.evaluate(fittest);
+}
+</script>
+</html>
